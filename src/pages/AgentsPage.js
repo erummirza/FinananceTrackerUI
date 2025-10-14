@@ -4,7 +4,7 @@ import AgentList from '../components/agents/AgentList';
 import AgentByID from '../components/agents/AgentByID';
 import DebugConnection from '../components/DebugConnection'; // Add this
 import { useAgentById } from '../hooks/useAgentById';
-
+import Header from './Header';
 
 
 const AgentsPage = () => {
@@ -18,12 +18,12 @@ const AgentsPage = () => {
   
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <div style={{ marginBottom: '30px' }}>
+      {/* <div style={{ marginBottom: '30px' }}>
         <h1 style={{ color: '#333', marginBottom: '10px' }}>Agents Management</h1>
         <p style={{ color: '#666', margin: 0 }}>
           Manage and view all agents in the system
         </p>
-      </div>
+      </div> */}
 <div>
   
 </div>
@@ -37,11 +37,13 @@ const AgentsPage = () => {
         onRefresh={refetch}>
 
         </AgentByID> */}
+        <Header/>
       <AgentList 
         agents={agents} 
         loading={loading} 
         error={error} 
         onRefresh={refetch}
+         // Pass the handler here
       />
     </div>
   );

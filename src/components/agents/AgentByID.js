@@ -1,7 +1,24 @@
 import React from 'react';
 
 const AgentByID = ({ agent, loading, error, onRefresh }) => {
-  if (loading) {
+console.log("agent" ,agent)
+  //console.log('CreatedDate value:', agent?.createdDate);
+const formatDate = (dateString) => {
+    if (!dateString) return 'Not set';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+if (loading) {
     return (
       <div style={{ 
         padding: '20px', 
@@ -84,7 +101,19 @@ const AgentByID = ({ agent, loading, error, onRefresh }) => {
         >
           Refresh
         </button>
-     
+        <button 
+        //  onClick={handleCreateClick}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#28a745',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+Create      
+  </button>
             </div>
 
       <div 
@@ -99,7 +128,9 @@ const AgentByID = ({ agent, loading, error, onRefresh }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h4 style={{ margin: '0 0 8px 0', color: '#333' }}>
-              #{agent.id} - {agent.agentName}
+{/* #{agent.id} - {agent.agentName} - {formatDate(agent.createdDate || agent.CreatedDate)} */}
+                #{agent.id} - {agent.agentName} - {new Date().toLocaleString()}
+
             </h4>
             <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
               ID: {agent.id}

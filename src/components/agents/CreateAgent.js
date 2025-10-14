@@ -1,154 +1,113 @@
-import React from 'react';
+import '../../App.css';
+import { useAddAgent } from '../../hooks/useAddAgent';
+import { useState } from 'react';
 
 const CreateAgent = () => {
+  const [formData, setFormData] = useState({
+    name: ''
+  });
+  
+  // Add success state
+  const [successMessage, setSuccessMessage] = useState('');
 
-   const handleSubmit = async (e) => {
-      e.preventDefault();
+  const { addAgent, isLoading, error } = useAddAgent();
+
+  const handleChange = (event) => {
+    setFormData(prev => ({
+      ...prev,
+      name: event.target.value
+    }));
+    
+    // Clear messages when user starts typing again
+    if (successMessage || error) {
+      setSuccessMessage('');
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    console.log("Form submitted!");
+    console.log("Form data:", formData);
+    
+    // Clear previous messages
+    setSuccessMessage('');
+    
+    try {
+      await addAgent({ name: formData.name });
       
-      if (!validateForm()) {
-        return;
-      }
-  
-      setIsSubmitting(true);
+      // ✅ Show success message when no error
+      setSuccessMessage('Record added successfully!');
+      console.log("✅ Agent added successfully!");
       
-      try {
-        // Your API call here
-        //console.log('Form submitted:', formData);
-        //call hook here
-        
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        alert(`Agent "${formData.agentName}" created successfully!`);
-        
-        // Reset form
-        setFormData({ agentName: '' });
-        
-      } catch (error) {
-        console.error('Error creating agent:', error);
-        alert('Error creating agent. Please try again.');
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
-  
-    const handleReset = () => {
-      setFormData({ agentName: '' });
-      setErrors({});
-    };
-  
+      // Reset form after success
+      setFormData({ name: '' });
+      
+    } catch (err) {
+      console.error("❌ Failed to add agent:", err);
+      //  if (err.response && err.response.status === 409) {
+      //   setSuccessMessage('Record already exists!');
+      // } else {
+      //   // For other errors, use the error from the hook
+      //   setSuccessMessage(err.message || 'An error occurred');
+      // }
+      
+      // Error is already handled by the hook and will be displayed
+    }
+  };
+
   return (
-    <div className="agent-list">
-      <h2>Create Agent List</h2>
-      <div style={{ 
-      maxWidth: '500px', 
-      margin: '20px auto', 
-      padding: '20px',
-      border: '1px solid #ddd',
-      borderRadius: '8px',
-      backgroundColor: '#f9f9f9',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    <div style={{ 
+      padding: '20px', 
+      textAlign: 'center', 
+      color: '#dc3545' 
     }}>
-      <h2 style={{ 
-        marginBottom: '20px', 
-        color: '#333',
-        borderBottom: '2px solid #007bff',
-        paddingBottom: '10px'
-      }}>
-        Create New Agent
-      </h2>
-      
-      <form onSubmit={handleSubmit}>
-        {/* Agent Name Field */}
-        <div style={{ marginBottom: '20px' }}>
-          <label 
-            htmlFor="agentName" 
-            style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              fontWeight: 'bold',
-              color: '#555'
-            }}
-          >
-            Agent Name *
-          </label>
+      <form className='create-agent-form' onSubmit={handleSubmit}>
+        <label>
+          Name:
           <input
             type="text"
-            id="agentName"
-            name="agentName"
-            value={formData.agentName}
+            value={formData.name} 
+            name="name"
             onChange={handleChange}
-            style={{
-              width: '100%',
-              padding: '12px',
-              border: `2px solid ${errors.agentName ? '#dc3545' : '#ccc'}`,
-              borderRadius: '4px',
-              fontSize: '16px',
-              boxSizing: 'border-box',
-              transition: 'border-color 0.3s ease'
-            }}
             placeholder="Enter agent name"
-            disabled={isSubmitting}
           />
-          {errors.agentName && (
-            <span style={{ 
-              color: '#dc3545', 
-              fontSize: '14px', 
-              marginTop: '5px', 
-              display: 'block' 
-            }}>
-              {errors.agentName}
-            </span>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '10px', 
-          justifyContent: 'flex-end',
-          borderTop: '1px solid #ddd',
-          paddingTop: '20px'
-        }}>
-          <button
-            type="button"
-            onClick={handleReset}
-            disabled={isSubmitting}
-            style={{
-              padding: '12px 24px',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              fontSize: '16px',
-              opacity: isSubmitting ? 0.6 : 1
-            }}
-          >
-            Clear
-          </button>
-          
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            style={{
-              padding: '12px 24px',
-              backgroundColor: isSubmitting ? '#6c757d' : '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              fontSize: '16px',
-              minWidth: '120px'
-            }}
-          >
-            {isSubmitting ? 'Creating...' : 'Create Agent'}
-          </button>
-        </div>
+        </label>
+        
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Adding Agent...' : 'Submit'}
+        </button>
+        
+        {/* ✅ Success Message */}
+        {successMessage && (
+          <div style={{ 
+            color: 'green', 
+            marginTop: '10px',
+            padding: '10px',
+            backgroundColor: '#f0fff0',
+            border: '1px solid #00ff00',
+            borderRadius: '4px'
+          }}>
+            ✅ {successMessage}
+          </div>
+        )}
+        
+        {/* Error Message */}
+        {error && (
+          <div style={{ 
+            color: 'red', 
+            marginTop: '10px',
+            padding: '10px',
+            backgroundColor: '#fff0f0',
+            border: '1px solid #ff0000',
+            borderRadius: '4px'
+          }}>
+            {error.includes('Request failed with status code 409') ? '⚠️ Record Already exist' : '❌'} 
+          </div>
+        )}
       </form>
     </div>
-    </div>
   );
-};
+
+}
 
 export default CreateAgent;

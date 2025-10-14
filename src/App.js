@@ -4,11 +4,17 @@ import AgentsPage from './pages/AgentsPage';
 import AgentByIDPage from './pages/AgentByIDPage';
 import CreatePage from './pages/CreatePage';
 import './App.css';
+import Header from  './pages/Header'
+import './styles/agent.css';
+
 
 // Create a search component that can use useNavigate
 function SearchBar() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+
+ 
+
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -23,18 +29,20 @@ function SearchBar() {
 
 
   return (
-    <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px' }}>
-      <input
+    <form onSubmit={handleSearch} 
+    // style={{ display: 'flex', gap: '10px' }}
+    >
+      <input className='form-input'
         type="text"
         placeholder="Search agents by ID..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        style={{
-          padding: '8px 12px',
-          borderRadius: '4px',
-          border: 'none',
-          minWidth: '250px'
-        }}
+        // style={{
+        //   padding: '8px 12px',
+        //   borderRadius: '4px',
+        //   border: 'none',
+        //   minWidth: '250px'
+        // }}
       />
       <button
         type="submit"
@@ -110,16 +118,28 @@ function App() {
         }}>
           <Routes>
             <Route path="/" element={
-              <div>
-                <h1>Welcome to Finance Tracker</h1>
-                <p>Select "Agents" from the navigation to manage your agents.</p>
-              </div>
+              <Header/>
+      //         <div>
+      //           <h1>Welcome to Finance Tracker</h1>
+      //           <p>Select "Agents" from the navigation to manage your agents.</p>
+      //        <div style={{ marginBottom: '30px' }}>
+      //   <h1 style={{ color: '#333', marginBottom: '10px' }}>Agents Management</h1>
+      //   <p style={{ color: '#666', margin: 0 }}>
+      //     Manage and view all agents in the system
+      //   </p>
+      // </div>
+      //         </div>
             } />
             <Route path="/agents" element={<AgentsPage />} />
             <Route path="/agent/:agentId" element={<AgentByIDPage />} /> 
            <Route path="/createpage" element={<CreatePage />} /> 
           </Routes>
         </main>
+<div>
+
+
+</div>
+
       </div>
     </Router>
   );
