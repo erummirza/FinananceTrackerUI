@@ -2,10 +2,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Refresh from '../../pages/Refresh';
 import useDeleteAgent from '../../hooks/useDeleteAgent';
+import useEditAgent from '../../hooks/useEditAgent';
 import { agentService } from '../../services/agentService';
 
-const AgentList = ({ agents, loading, error, onRefresh }) => {
+import { usePagination } from '../../hooks/usePagination';
+//const AgentList = ({ agents, loading, error, onRefresh }) => {
+const AgentList = ({ agents, loading, error, onRefresh, totalCount }) => {
   const { deleteAgent, isLoading: deleteLoading, error: deleteError } = useDeleteAgent();
+    const { editAgent, isLoading: editLoading, error: editError } = useEditAgent();
   const navigate = useNavigate();
 
   // Date formatting function
@@ -42,6 +46,63 @@ const AgentList = ({ agents, loading, error, onRefresh }) => {
         alert("Failed to delete agent: " + (result?.error || "Unknown error"));
       }
     }
+  };
+
+   const {
+    currentPage,
+    pageSize,
+    goToPage,
+    nextPage,
+    prevPage,
+    firstPage,
+    lastPage,
+    changePageSize
+  } = usePagination(1, 10);
+  const showEditAlert = async (itemId) => {
+    alert("You clicked on Record " + itemId);
+    if (window.confirm("Are you sure you want to Edit agent #" + itemId + "?")) {
+      //Naviaget to edit page 
+    navigate(`/editpage/${itemId}`);
+  
+      //const result = await editAgent(itemId);
+      //
+      // if (result && result.success) {
+      //   alert("Agent updated successfully!");
+      //   try {
+      //     await agentService.getAllAgents();
+      //     onRefresh();
+      //   } catch (refreshError) {
+      //     console.error("Error refreshing agents list:", refreshError);
+      //   }
+      // } else {
+      //   alert("Failed to edit agent: " + (result?.error || "Unknown error"));
+      // }
+    }
+  };
+   const totalPages = Math.ceil(totalCount / pageSize);
+ const handlePageSizeChange = (newSize) => {
+    changePageSize(parseInt(newSize));
+    onRefresh(currentPage, parseInt(newSize));
+  };
+
+  // Generate visible page numbers
+  const getVisiblePages = () => {
+    const visiblePages = [];
+    const maxVisible = 5;
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    
+    // Adjust if we're near the end
+    if (endPage - startPage + 1 < maxVisible) {
+      startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      visiblePages.push(i);
+    }
+    
+    return visiblePages;
   };
 
   const handleCreateClick = () => {
@@ -104,13 +165,49 @@ const AgentList = ({ agents, loading, error, onRefresh }) => {
     );
   }
 
-  return (
+return (
     <div>
-      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Agents List ({agents.length} agents)</h3>
-        <div style={{ display: 'flex', gap: '10px' }}>
+      {/* Header with Controls */}
+      <div style={{ 
+        marginBottom: '20px', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '15px'
+      }}>
+        <div>
+          <h3>Agents List</h3>
+          <p style={{ color: '#666', margin: 0 }}>
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} agents
+          </p>
+        </div>
+        
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Page Size Selector */}
+          <div>
+            <label style={{ marginRight: '8px', fontWeight: 'bold' }}>
+              Show: 
+            </label>
+            <select 
+              value={pageSize}
+              onChange={(e) => handlePageSizeChange(e.target.value)}
+              style={{
+                padding: '6px 10px',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                backgroundColor: 'white'
+              }}
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+
           <button 
-            onClick={onRefresh}
+           // onClick={handleRefresh}
             style={{
               padding: '8px 16px',
               backgroundColor: '#28a745',
@@ -141,7 +238,7 @@ const AgentList = ({ agents, loading, error, onRefresh }) => {
       {/* Table Header */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 2fr 2fr 2fr', // Equal proportional widths
+        gridTemplateColumns: '1fr 2fr 2fr 2fr',
         gap: '15px',
         padding: '15px 20px',
         backgroundColor: '#194f85ff',
@@ -160,7 +257,8 @@ const AgentList = ({ agents, loading, error, onRefresh }) => {
       {/* Agents Grid */}
       <div style={{ 
         display: 'grid', 
-        gap: '10px' 
+        gap: '10px',
+        marginBottom: '20px'
       }}>
         {agents.map(agent => (
           <div 
@@ -173,35 +271,30 @@ const AgentList = ({ agents, loading, error, onRefresh }) => {
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}
           >
-            {/* Data Row - Using same grid layout as header */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 2fr 2fr 2fr', // Same as header
+              gridTemplateColumns: '1fr 2fr 2fr 2fr',
               gap: '15px',
               alignItems: 'center'
             }}>
-              {/* Agent ID */}
               <div>
                 <strong style={{ color: '#333', fontSize: '16px' }}>
                   #{agent.id}
                 </strong>
               </div>
               
-              {/* Agent Name */}
               <div>
                 <span style={{ color: '#333', fontSize: '16px' }}>
                   {agent.agentName}
                 </span>
               </div>
               
-              {/* Created Date */}
               <div>
                 <span style={{ color: '#666', fontSize: '14px' }}>
                   {formatDate(agent.createdDate)}
                 </span>
               </div>
               
-              {/* Actions */}
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-start' }}>
                 <button
                   style={{
@@ -217,6 +310,7 @@ const AgentList = ({ agents, loading, error, onRefresh }) => {
                   View
                 </button>
                 <button
+                  onClick={() => showEditAlert(agent.id)}
                   style={{
                     padding: '6px 12px',
                     backgroundColor: '#ffc107',
@@ -249,8 +343,126 @@ const AgentList = ({ agents, loading, error, onRefresh }) => {
           </div>
         ))}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '10px',
+          flexWrap: 'wrap',
+          padding: '20px',
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          backgroundColor: '#f8f9fa'
+        }}>
+          {/* First Page */}
+          <button
+            onClick={() => {
+              firstPage();
+              onRefresh(1, pageSize);
+            }}
+            disabled={currentPage === 1}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #007bff',
+              backgroundColor: 'white',
+              color: '#007bff',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              borderRadius: '4px',
+              opacity: currentPage === 1 ? 0.5 : 1
+            }}
+          >
+            First
+          </button>
+
+          {/* Previous Page */}
+          <button
+            onClick={() => {
+              prevPage();
+              onRefresh(currentPage - 1, pageSize);
+            }}
+            disabled={currentPage === 1}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #007bff',
+              backgroundColor: 'white',
+              color: '#007bff',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              borderRadius: '4px',
+              opacity: currentPage === 1 ? 0.5 : 1
+            }}
+          >
+            Previous
+          </button>
+
+          {/* Page Numbers */}
+          {getVisiblePages().map(page => (
+            <button
+              key={page}
+              onClick={() => {
+                goToPage(page);
+                onRefresh(page, pageSize);
+              }}
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #007bff',
+                backgroundColor: currentPage === page ? '#007bff' : 'white',
+                color: currentPage === page ? 'white' : '#007bff',
+                cursor: 'pointer',
+                borderRadius: '4px',
+                fontWeight: currentPage === page ? 'bold' : 'normal'
+              }}
+            >
+              {page}
+            </button>
+          ))}
+
+          {/* Next Page */}
+          <button
+            onClick={() => {
+              nextPage();
+              onRefresh(currentPage + 1, pageSize);
+            }}
+            disabled={currentPage === totalPages}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #007bff',
+              backgroundColor: 'white',
+              color: '#007bff',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              borderRadius: '4px',
+              opacity: currentPage === totalPages ? 0.5 : 1
+            }}
+          >
+            Next
+          </button>
+
+          {/* Last Page */}
+          <button
+            onClick={() => {
+              lastPage(totalPages);
+              onRefresh(totalPages, pageSize);
+            }}
+            disabled={currentPage === totalPages}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #007bff',
+              backgroundColor: 'white',
+              color: '#007bff',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              borderRadius: '4px',
+              opacity: currentPage === totalPages ? 0.5 : 1
+            }}
+          >
+            Last
+          </button>
+        </div>
+      )}
     </div>
   );
 };
+
 
 export default AgentList;

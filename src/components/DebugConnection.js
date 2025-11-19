@@ -7,9 +7,9 @@ const DebugConnection = () => {
 
   const testConnection = async () => {
     try {
-      console.log('Testing connection to: https://localhost:7043/api/agents');
+      console.log('Testing connection to: https://localhost:5227/api/agents');
       
-      const response = await axios.get('https://localhost:7043/api/agents', {
+      const response = await axios.get('https://localhost:5227/api/agents', {
         timeout: 5000
       });
       

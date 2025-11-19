@@ -5,48 +5,59 @@ import AgentByID from '../components/agents/AgentByID';
 import DebugConnection from '../components/DebugConnection'; // Add this
 import { useAgentById } from '../hooks/useAgentById';
 import Header from './Header';
+import { useState } from 'react';
+import { agentService } from '../services/agentService';
+import { useEffect } from 'react';
 
-
+// In your parent component (e.g., AgentsPage.js)
 const AgentsPage = () => {
-  console.log("in agent page where useagents before")
-  const { agents, loading, error, refetch } = useAgents();
- // const { agentsByID, loading, error,refetchByID } = useAgentById();
+  const [agents, setAgents] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
 
-  // Add this to see what's happening in console
-  console.log('Agents Page state:', { agents, loading, error });
+  const fetchAgents = async (page = 1, pageSize = 10) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await agentService.getAgentsWithPagination(page, pageSize);
+      setAgents(response.data);
+      setTotalCount(response.totalCount);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  
+   const fetchAllAgents = async (page = 1, pageSize = 10) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await agentService.getAgentsWithPagination(page, pageSize);
+      setAgents(response.data);
+      setTotalCount(response.totalCount);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAgents();
+  }, []);
+
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      {/* <div style={{ marginBottom: '30px' }}>
-        <h1 style={{ color: '#333', marginBottom: '10px' }}>Agents Management</h1>
-        <p style={{ color: '#666', margin: 0 }}>
-          Manage and view all agents in the system
-        </p>
-      </div> */}
-<div>
-  
-</div>
-      {/* Add debug component */}
-      {error && <DebugConnection />}
-{/* <AgentByID 
-
- agents={agents} 
-        loading={loading} 
-        error={error} 
-        onRefresh={refetch}>
-
-        </AgentByID> */}
-        <Header/>
-      <AgentList 
-        agents={agents} 
-        loading={loading} 
-        error={error} 
-        onRefresh={refetch}
-         // Pass the handler here
+    <div>
+      <AgentList
+        agents={agents}
+        loading={loading}
+        error={error}
+        totalCount={totalCount}
+        onRefresh={fetchAgents}
       />
     </div>
   );
 };
-
 export default AgentsPage;
